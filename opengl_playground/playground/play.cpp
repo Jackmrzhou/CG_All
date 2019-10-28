@@ -129,21 +129,21 @@ void redraw()
 	glutSwapBuffers();
 }
 
-int main(int argc, char *argv[])
-{
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutInitWindowSize(640, 480);
-	int windowHandle
-		= glutCreateWindow("Simple GLUT App");
-
-	glutDisplayFunc(redraw);
-	glutReshapeFunc(reshape);
-	glutIdleFunc(idle);
-
-	glutMainLoop();
-
-	return 0;
-}
+//int main(int argc, char *argv[])
+//{
+//	glutInit(&argc, argv);
+//	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+//	glutInitWindowSize(640, 480);
+//	int windowHandle
+//		= glutCreateWindow("Simple GLUT App");
+//
+//	glutDisplayFunc(redraw);
+//	glutReshapeFunc(reshape);
+//	glutIdleFunc(idle);
+//
+//	glutMainLoop();
+//
+//	return 0;
+//}
 
 

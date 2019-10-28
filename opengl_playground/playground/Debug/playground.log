@@ -1,3 +1,2 @@
-﻿  play.cpp
-  playground.vcxproj -> C:\Users\Jack\Desktop\2019CG\opengl_playground\Debug\playground.exe
-  playground.vcxproj -> C:\Users\Jack\Desktop\2019CG\opengl_playground\Debug\playground.pdb (Partial PDB)
+﻿MSVCRTD.lib(exe_main.obj) : error LNK2019: 无法解析的外部符号 _main，该符号在函数 "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ) 中被引用
+C:\Users\59478\Desktop\CG\CG_All\opengl_playground\Debug\playground.exe : fatal error LNK1120: 1 个无法解析的外部命令
