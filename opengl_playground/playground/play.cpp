@@ -1,149 +1,123 @@
+#include <glad\glad.h>
 #include "glut.h"
+#include <iostream>
+#include <cstdlib>
+using namespace std;
 
-float fTranslate;
-float fRotate;
-float fScale = 1.0f;								// set inital scale value to 1.0f
+int vertexShader, fragmentShader, shaderProgram;
 
-void Draw_Triangle()									// This function draws a triangle with RGB colors
-{
-	glBegin(GL_TRIANGLES);
-	// 设置顶点颜色
-	glColor3f(1.0f, 0.0f, 0.0f);
-	// 设置顶点坐标
-	glVertex3f(-1.0f, 1.0f, 0.0f);
+const char *vertexShaderSource = "#version 330 core\n"
+"layout (location = 0) in vec3 aPos;\n"
+"void main()\n"
+"{\n"
+"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"}\0";
+const char *fragmentShaderSource = "#version 330 core\n"
+"out vec4 FragColor;\n"
+"void main()\n"
+"{\n"
+"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"}\n\0";
 
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
+GLuint VAO;
 
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
+void init() {
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+	glCompileShader(vertexShader);
 
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(-1.0f, 1.0f, 0.0f);
-
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
-
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(1.0f, 1.0f, 0.0f);
-
-	glEnd();
-}
-
-void reshape(int width, int height)
-{
-	if (height == 0)										// Prevent A Divide By Zero By
-	{
-		height = 1;										// Making Height Equal One
+	int success;
+	char infoLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 
-	glViewport(0, 0, width, height);						// Reset The Current Viewport
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+	glCompileShader(fragmentShader);
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::FRAMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+	}
 
-	glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
-	glLoadIdentity();									// Reset The Projection Matrix
+	shaderProgram = glCreateProgram();
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
 
-														// Calculate The Aspect Ratio Of The Window
-														// Perspective view
-														//gluPerspective(45.0f, (GLfloat)width / (GLfloat)height, 0.1f, 100.0f);
-														// Ortho view
-	glOrtho(-4, 4, -4, 4, 0, 100);
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+	if (!success) {
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+	}
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 
-	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
-	glLoadIdentity();									// Reset The Modelview Matrix
+	GLfloat vertices[] = {
+		-0.5f, -0.5f, 0.0f, // left  
+		0.5f, -0.5f, 0.0f, // right 
+		0.0f,  0.5f, 0.0f  // top   
+	};
+
+	GLuint VBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), 0);
+	glEnableVertexAttribArray(0);
+
+	//unbind 
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
-void idle()
-{
-	glutPostRedisplay();
-}
-
-void draw_sep() {
-	glPushMatrix();
-	glScalef(.25f, 1.f, 1.f);
-	Draw_Triangle();
-	glPopMatrix();
-}
-
-void draw_und() {
-	glPushMatrix();
-	glScalef(1.f, .25f, 1.f);
-	Draw_Triangle();
-	glPopMatrix();
-}
-
-void draw_four() {
-	// |_|
-	//   |
-	glPushMatrix();
-	draw_sep();
-	glTranslatef(0.75f, -1.25f, 0.f);
-	draw_und();
-	glTranslatef(0.75f, 1.25f, 0.f);
-	draw_sep();
-	glTranslatef(0.f, -2.f, 0.f);
-	draw_sep();
-	glPopMatrix();
-}
-
-void draw_two() {
-	// _
-	// _|
-	//|_
-	glPushMatrix();
-	draw_und();
-	glTranslatef(0.75f, -.75f, 0.f);
-	draw_sep();
-	glTranslatef(-0.75f, -.75f, 0.f);
-	draw_und();
-	glTranslatef(-0.75f, -.75f, 0.f);
-	draw_sep();
-	glTranslatef(0.75f, -0.75f, 0.f);
-	draw_und();
-	glPopMatrix();
-}
-
-void redraw()
-{
-	// 如果想使用线框模式
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+void redraw() {
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glLoadIdentity();									// 重置变换矩阵（回到世界坐标系）
-
-	glPushMatrix(); // 设置一个新的坐标系
-	glTranslatef(-3.0f, 0.f, 0.f);				// 向左平移
-	//Draw_Triangle();
-	draw_four();
-	glPopMatrix(); // 回到前一个坐标系
-
-	glPushMatrix();
-	glTranslatef(-0.5f, 0.f, 0.f);
-	draw_four();
-	glPopMatrix();
-
-	glPushMatrix();
-	glTranslatef(2.75f, 0.75f, 0.f);
-	draw_two();
-	glPopMatrix();
-
+	glUseProgram(shaderProgram);
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0);
 	glutSwapBuffers();
 }
 
-//int main(int argc, char *argv[])
-//{
-//	glutInit(&argc, argv);
-//	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-//	glutInitWindowSize(640, 480);
-//	int windowHandle
-//		= glutCreateWindow("Simple GLUT App");
-//
-//	glutDisplayFunc(redraw);
-//	glutReshapeFunc(reshape);
-//	glutIdleFunc(idle);
-//
-//	glutMainLoop();
-//
-//	return 0;
-//}
+void reshape(int width, int height) {
+	glViewport(0, 0, width, height);
+	glutPostRedisplay();
+}
+
+void idle() {
+	glutPostRedisplay();
+}
+
+int main(int argc, char *argv[])
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+	glutInitWindowSize(640, 480);
+	int windowHandle
+		= glutCreateWindow("Simple GLUT App");
+
+	glutDisplayFunc(redraw);
+	glutReshapeFunc(reshape);
+	glutIdleFunc(idle);
+	if (!gladLoadGL()) {
+		cout << "something went wrong!" << endl;
+		exit(-1);
+	}
+	const GLubyte* version = glGetString(GL_VERSION);
+	cout << version << endl;
+	init();
+	glutMainLoop();
+
+	return 0;
+}
 
 

@@ -1,34 +1,38 @@
 ﻿#include "glut.h"
+#include <cmath>
+#include <Windows.h>
 
 float fTranslate;
 float fRotate;
 float fScale = 1.0f;								// set inital scale value to 1.0f
 
-void Draw_Triangle()									// This function draws a triangle with RGB colors
-{
-	glBegin(GL_TRIANGLES);
-	// 设置顶点颜色
-	glColor3f(1.0f, 0.0f, 0.0f);
-	// 设置顶点坐标
-	glVertex3f(-1.0f, 1.0f, 0.0f);
+int t = 0;
 
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
-
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
-
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(-1.0f, 1.0f, 0.0f);
-
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
-
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(1.0f, 1.0f, 0.0f);
-
-	glEnd();
-}
+//void Draw_Triangle()									// This function draws a triangle with RGB colors
+//{
+//	glBegin(GL_TRIANGLES);
+//	// 设置顶点颜色
+//	glColor3f(1.0f, 0.0f, 0.0f);
+//	// 设置顶点坐标
+//	glVertex3f(-1.0f, 1.0f, 0.0f);
+//
+//	glColor3f(0.0f, 1.0f, 0.0f);
+//	glVertex3f(-1.0f, -1.0f, 0.0f);
+//
+//	glColor3f(0.0f, 0.0f, 1.0f);
+//	glVertex3f(1.0f, -1.0f, 0.0f);
+//
+//	glColor3f(1.0f, 0.0f, 0.0f);
+//	glVertex3f(-1.0f, 1.0f, 0.0f);
+//
+//	glColor3f(0.0f, 0.0f, 1.0f);
+//	glVertex3f(1.0f, -1.0f, 0.0f);
+//
+//	glColor3f(0.0f, 1.0f, 0.0f);
+//	glVertex3f(1.0f, 1.0f, 0.0f);
+//
+//	glEnd();
+//}
 
 void reshape(int width, int height)
 {
@@ -56,20 +60,59 @@ void reshape(int width, int height)
 
 void idle()
 {
+	t++;
+	Sleep(100);
 	glutPostRedisplay();
+}
+
+void myGlutWireCube(float size) {
+	GLfloat vertices[] = {
+		0,0,0,
+		1,0,0,
+		1,0,0,
+		1,1,0,
+		1,1,0,
+		0,1,0,
+		0,1,0,
+		0,0,0,
+		0,0,0,
+		0,0,-1,
+		0,0,-1,
+		0,1,-1,
+		0,1,-1,
+		0,1,0,
+		1,0,0,
+		1,0,-1,
+		1,0,-1,
+		1,1,-1,
+		1,1,-1,
+		1,1,0,
+		0,1,-1,
+		1,1,-1,
+		0,0,-1,
+		1,0,-1,
+	};
+	glPushMatrix();
+	glScalef(size, size, size);
+	glTranslatef(-0.5, -0.5, 0.5);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(3, GL_FLOAT, 0, vertices);
+	glDrawArrays(GL_LINES, 0, 24);
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glPopMatrix();
 }
 
 void draw_sep() {
 	glPushMatrix();
 	glScalef(.25f, 1.f, 1.f);
-	glutWireCube(2.0);
+	myGlutWireCube(2.0);
 	glPopMatrix();
 }
 
 void draw_und() {
 	glPushMatrix();
 	glScalef(1.f, .25f, 1.f);
-	glutWireCube(2.0);
+	myGlutWireCube(2.0);
 	glPopMatrix();
 }
 
@@ -115,16 +158,20 @@ void redraw()
 	glPushMatrix(); // 设置一个新的坐标系
 	glTranslatef(-3.0f, 0.f, 0.f);				// 向左平移
 	//Draw_Triangle();
+	glTranslatef(0, sinf(t), 0);
 	draw_four();
 	glPopMatrix(); // 回到前一个坐标系
 
 	glPushMatrix();
+	glRotatef(t % 360, 0, 1, 0);
 	glTranslatef(-0.5f, 0.f, 0.f);
+	
 	draw_four();
 	glPopMatrix();
 
 	glPushMatrix();
 	glTranslatef(2.75f, 0.75f, 0.f);
+	glScalef(1, 1, t % 2+1);
 	draw_two();
 	glPopMatrix();
 
