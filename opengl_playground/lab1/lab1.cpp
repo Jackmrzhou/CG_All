@@ -1,4 +1,6 @@
 #include "glut.h"
+#include <iostream>
+using namespace std;
 
 float fTranslate;
 float fRotate;
@@ -140,6 +142,9 @@ int main(int argc, char *argv[])
 	glutDisplayFunc(redraw);
 	glutReshapeFunc(reshape);
 	glutIdleFunc(idle);
+
+	const GLubyte* version = glGetString(GL_VERSION);
+	cout << version << endl;
 
 	glutMainLoop();
 

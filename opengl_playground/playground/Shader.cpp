@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <glad/glad.h>
 using namespace std;
 
 Shader::Shader(const string & vertexPath, const string & fragmentPath)
