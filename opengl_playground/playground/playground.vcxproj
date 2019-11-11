@@ -142,6 +142,14 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\tmp\glad\src\glad.c" />
     <ClCompile Include="play.cpp" />
+    <ClCompile Include="Shader.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fShader.glsl" />
+    <None Include="vShader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
