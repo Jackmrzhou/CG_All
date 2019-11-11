@@ -2,6 +2,8 @@
 #include "glut.h"
 #include <iostream>
 #include <cstdlib>
+#include <Windows.h>
+#include <ctime>
 using namespace std;
 
 int vertexShader, fragmentShader, shaderProgram;
@@ -14,9 +16,10 @@ const char *vertexShaderSource = "#version 330 core\n"
 "}\0";
 const char *fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
+"uniform vec4 ourColor;\n"
 "void main()\n"
 "{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+"   FragColor = ourColor;\n"
 "}\n\0";
 
 GLuint VAO;
@@ -93,6 +96,8 @@ void redraw() {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUseProgram(shaderProgram);
+	int ourColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
+	glUniform4f(ourColorLocation, 0.f, (sin(time(NULL))/2.f)+0.5f, 0.f, 1.f);
 	glBindVertexArray(VAO);
 	//glDrawArrays(GL_TRIANGLES, 0, 3);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
