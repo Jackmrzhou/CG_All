@@ -6,6 +6,10 @@
 #include <ctime>
 #include "Shader.h"
 #include "stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 using namespace std;
 GLuint VAO;
 Shader *myShader;
@@ -96,6 +100,15 @@ void redraw() {
 	glBindTexture(GL_TEXTURE_2D, texture2);
 	myShader->setInt("texture1", 0);
 	myShader->setInt("texture2", 1);
+	// do transformation
+	//cout << time(NULL) << endl;
+	static float time = 0.f;
+	time++;
+	Sleep(20);
+	glm::mat4 trans = glm::mat4(1.f);
+	trans = glm::rotate(trans, glm::radians(60.f+time), glm::vec3(0,0,1));
+	trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+	glUniformMatrix4fv(glGetUniformLocation(myShader->GetID(), "transform"), 1, GL_FALSE, glm::value_ptr(trans));
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
