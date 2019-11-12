@@ -12,6 +12,8 @@ public:
 	~Shader();
 	GLuint GetID();
 	void use();
+	void setInt(const string& name, int val);
+	void setFloat(const string& name, int val);
 	
 private:
 	GLuint programID;

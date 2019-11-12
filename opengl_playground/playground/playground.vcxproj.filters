@@ -44,4 +44,12 @@
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="resource\container.jpg">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="resource\awesomeface.png">
+      <Filter>资源文件</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

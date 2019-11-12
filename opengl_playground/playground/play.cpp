@@ -1,5 +1,5 @@
 #include <glad\glad.h>
-#include "glut.h"
+#include <glut.h>
 #include <iostream>
 #include <cstdlib>
 #include <Windows.h>
@@ -9,14 +9,15 @@
 using namespace std;
 GLuint VAO;
 Shader *myShader;
-GLuint texture;
+GLuint texture, texture2;
 void init() {
 	myShader = new Shader("vShader.glsl", "fShader.glsl");
 	// load texture
+	stbi_set_flip_vertically_on_load(true);
 	int w, h, channels;
 	unsigned char* data = stbi_load("resource/container.jpg", &w, &h, &channels, 0);
 	if (!data) {
-		cout << "loading iamge failed!" << endl;
+		cout << "loading image failed!" << endl;
 	}
 	glGenTextures(1, &texture);
 	//bind current texture 
@@ -31,6 +32,21 @@ void init() {
 	// generate mipmap
 	glGenerateMipmap(GL_TEXTURE_2D);
 	// free data
+	stbi_image_free(data);
+
+	data = stbi_load("resource/awesomeface.png", &w, &h, &channels, 0);
+
+	if (!data) {
+		cout << "loading image failed" << endl;
+	}
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
 
 	GLfloat vertices[] = {
@@ -74,7 +90,12 @@ void redraw() {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	myShader->use();
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	myShader->setInt("texture1", 0);
+	myShader->setInt("texture2", 1);
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);

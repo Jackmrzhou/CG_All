@@ -73,3 +73,13 @@ void Shader::use()
 {
 	glUseProgram(this->programID);
 }
+
+void Shader::setInt(const string& name, int val)
+{
+	glUniform1i(glGetUniformLocation(this->programID, name.c_str()), val);
+}
+
+void Shader::setFloat(const string& name, int val)
+{
+	glUniform1f(glGetUniformLocation(this->programID, name.c_str()), val);
+}
