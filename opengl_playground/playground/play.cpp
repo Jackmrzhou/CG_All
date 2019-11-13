@@ -11,9 +11,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 using namespace std;
+constexpr int windowWidth = 640, windowHeight = 480;
 GLuint VAO;
 Shader *myShader;
 GLuint texture, texture2;
+glm::vec3 cameraPos = glm::vec3(0.f, 0.f, 3.f), cameraFront = glm::vec3(0.f, 0.f, -1.f), cameraUp = glm::vec3(0.f, 1.f, 0.f);
 void init() {
 	myShader = new Shader("vShader.glsl", "fShader.glsl");
 	// load texture
@@ -53,17 +55,48 @@ void init() {
 	glGenerateMipmap(GL_TEXTURE_2D);
 	stbi_image_free(data);
 
-	GLfloat vertices[] = {
-		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
-	};
+	float vertices[] = {
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-	GLint indices[] = {
-		0, 1, 3,
-		1, 2, 3,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
 	GLuint VBO;
@@ -74,25 +107,20 @@ void init() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	GLuint EBO;
-	glGenBuffers(1, &EBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), 0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
 	//unbind 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	glEnable(GL_DEPTH_TEST);
 }
 
 void redraw() {
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	myShader->use();
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture);
@@ -100,17 +128,15 @@ void redraw() {
 	glBindTexture(GL_TEXTURE_2D, texture2);
 	myShader->setInt("texture1", 0);
 	myShader->setInt("texture2", 1);
-	// do transformation
-	//cout << time(NULL) << endl;
-	static float time = 0.f;
-	time++;
-	Sleep(20);
-	glm::mat4 trans = glm::mat4(1.f);
-	trans = glm::rotate(trans, glm::radians(60.f+time), glm::vec3(0,0,1));
-	trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
-	glUniformMatrix4fv(glGetUniformLocation(myShader->GetID(), "transform"), 1, GL_FALSE, glm::value_ptr(trans));
+	glm::mat4 model = glm::mat4(1.f), view = glm::mat4(1.f), projection = glm::mat4(1.f);
+	view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	model = glm::rotate(model, glm::radians(-45.f), glm::vec3(1.f, 1.f, 0));
+	projection = glm::perspective(glm::radians(45.f), (float)windowWidth / (float)windowHeight, 0.1f, 100.f);
+	myShader->setMat4("model", model);
+	myShader->setMat4("view", view);
+	myShader->setMat4("projection", projection);
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 	glBindVertexArray(0);
 	glutSwapBuffers();
 }
@@ -124,17 +150,70 @@ void idle() {
 	glutPostRedisplay();
 }
 
+void keyboardCallback(unsigned char key, int x, int y) {
+	static float speed = 0.05f;
+	switch (key)
+	{
+	case 'w': {
+		cameraPos.z -= speed;
+	} break;
+	case 's': {
+		cameraPos.z += speed;
+	} break;
+	case 'a': {
+		cameraPos.x -= speed;
+	} break;
+	case 'd': {
+		cameraPos.x += speed;
+	} break;
+	default:
+		break;
+	}
+}
+
+void motionCallback(int x, int y) {
+	static int lastX = -1, lastY = -1;
+	if (lastX == -1 && lastY == -1) {
+		lastX = x;
+		lastY = y;
+	}
+	float xOff = x - lastX, yOff = y - lastY, sensitivity = 0.05f;
+	lastX = x;
+	lastY = y;
+	xOff *= sensitivity;
+	yOff *= sensitivity;
+
+	static float yaw = -90.f, pitch = 0;
+	yaw += xOff;
+	pitch += yOff;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
+}
+
+
 int main(int argc, char *argv[])
 {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-	glutInitWindowSize(640, 480);
+	glutInitWindowSize(windowWidth, windowHeight);
 	int windowHandle
 		= glutCreateWindow("Simple GLUT App");
 
 	glutDisplayFunc(redraw);
 	glutReshapeFunc(reshape);
 	glutIdleFunc(idle);
+	glutKeyboardFunc(keyboardCallback);
+	glutPassiveMotionFunc(motionCallback);
+	
 	if (!gladLoadGL()) {
 		cout << "something went wrong!" << endl;
 		exit(-1);
