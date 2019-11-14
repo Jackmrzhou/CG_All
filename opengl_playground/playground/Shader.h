@@ -16,6 +16,8 @@ public:
 	void setInt(const string& name, int val);
 	void setFloat(const string& name, int val);
 	void setMat4(const string& name, const glm::mat4& val);
+	void setVec3(const string& name, float x, float y, float z);
+	void setVec3(const string& name, const glm::vec3 &val);
 	
 private:
 	GLuint programID;
