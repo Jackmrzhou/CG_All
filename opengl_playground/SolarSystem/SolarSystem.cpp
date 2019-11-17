@@ -8,7 +8,7 @@
 #include "Model.h"
 using namespace std;
 glm::vec3 cameraPos(0.f, 0.f, 3.f), cameraFront(0.f, 0.f, -1.f), cameraUp(0.f, 1.f, 0.f);
-constexpr int windowWidth = 640, windowHeight = 480;
+constexpr int windowWidth = 1280, windowHeight = 1024;
 Shader* myShader;
 Model* myModel;
 void init() {
