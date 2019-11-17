@@ -1,20 +1,120 @@
-﻿// SolarSystem.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
-//
-
+﻿#include <glad/glad.h>
+#include <glut.h>
 #include <iostream>
-
-int main()
-{
-    std::cout << "Hello World!\n";
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include "Shader.h"
+#include "Model.h"
+using namespace std;
+glm::vec3 cameraPos(0.f, 0.f, 3.f), cameraFront(0.f, 0.f, -1.f), cameraUp(0.f, 1.f, 0.f);
+constexpr int windowWidth = 640, windowHeight = 480;
+Shader* myShader;
+Model* myModel;
+void init() {
+	glEnable(GL_DEPTH_TEST);
+	myShader = new Shader("shaders/vertex.glsl", "shaders/fragment.glsl");
+	myModel = new Model("resource/nanosuit/nanosuit.obj");
 }
 
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
+void reshape(int w, int h) {
+	glViewport(0, 0, w, h);
+	glutPostRedisplay();
+}
 
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
+void redraw() {
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	myShader->use();
+	glm::mat4 projection = glm::perspective(glm::radians(45.f), (float)windowWidth / (float)windowHeight, 0.1f, 100.0f);
+	glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	myShader->setMat4("projection", projection);
+	myShader->setMat4("view", view);
+
+	// render the loaded model
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
+	model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+	myShader->setMat4("model", model);
+	myModel->Draw(*myShader);
+
+	glutSwapBuffers();
+}
+
+void idle() {
+	glutPostRedisplay();
+}
+void keyboardCallback(unsigned char key, int x, int y) {
+	static float speed = 0.05f;
+	switch (key)
+	{
+	case 'w': {
+		cameraPos.z -= speed;
+	} break;
+	case 's': {
+		cameraPos.z += speed;
+	} break;
+	case 'a': {
+		cameraPos.x -= speed;
+	} break;
+	case 'd': {
+		cameraPos.x += speed;
+	} break;
+	default:
+		break;
+	}
+}
+
+void motionCallback(int x, int y) {
+	static int lastX = -1, lastY = -1;
+	if (lastX == -1 && lastY == -1) {
+		lastX = x;
+		lastY = y;
+	}
+	float xOff = x - lastX, yOff = y - lastY, sensitivity = 0.1f;
+	lastX = x;
+	lastY = y;
+	xOff *= sensitivity;
+	yOff *= sensitivity;
+
+	static float yaw = -90.f, pitch = 0;
+	yaw += xOff;
+	pitch -= yOff;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
+}
+int main(int argc, char* argv[])
+{
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+	glutInitWindowSize(windowWidth, windowHeight);
+	int windowHandle
+		= glutCreateWindow("Simple GLUT App");
+
+	glutDisplayFunc(redraw);
+	glutReshapeFunc(reshape);
+	glutIdleFunc(idle);
+	glutKeyboardFunc(keyboardCallback);
+	glutPassiveMotionFunc(motionCallback);
+
+	if (!gladLoadGL()) {
+		cout << "something went wrong!" << endl;
+		exit(-1);
+	}
+	const GLubyte* version = glGetString(GL_VERSION);
+	cout << version << endl;
+	init();
+	glutMainLoop();
+
+	return 0;
+}
