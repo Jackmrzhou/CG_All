@@ -13,6 +13,8 @@ Shader::Shader(const string & vertexPath, const string & fragmentPath)
 	// load code from file
 	string vertexCode, fragmentCode;
 	ifstream vertexFile(vertexPath), fragmentFile(fragmentPath);
+	vertexFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	fragmentFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 	stringstream vertexStream, fragmentStream;
 	vertexStream << vertexFile.rdbuf();
 	fragmentStream << fragmentFile.rdbuf();

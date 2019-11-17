@@ -21,8 +21,10 @@ private:
 	void loadModel(const string& path);
 	void processNode(aiNode* node, const aiScene* scene);
 	Mesh processMesh(aiMesh* mesh, const aiScene* scene);
-	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type,
+	vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTexture** tex, aiTextureType type,
 		string typeName);
+	unsigned int loadEmbeddedTextures(aiTexture* texture);
 };
 
 unsigned int TextureFromFile(const char* path, const string& directory);
+unsigned int generateTexture(unsigned char* data, int width, int height, GLenum format);

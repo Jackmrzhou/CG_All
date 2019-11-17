@@ -55,5 +55,8 @@
     <None Include="shaders\fragment.glsl">
       <Filter>源文件</Filter>
     </None>
+    <None Include="shaders\lampFragment.glsl">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
