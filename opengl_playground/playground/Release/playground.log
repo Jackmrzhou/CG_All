@@ -1,1 +1,12 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.Cpp.Platform.targets(57,5): error MSB8020: 无法找到 v142 的生成工具(平台工具集 =“v142”)。若要使用 v142 生成工具进行生成，请安装 v142 生成工具。或者，可以升级到当前 Visual Studio 工具，方式是通过选择“项目”菜单或右键单击该解决方案，然后选择“重定解决方案目标”。
+﻿  glad.c
+  play.cpp
+C:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\shared\minwindef.h(130,1): warning C4005: “APIENTRY”: 宏重定义
+  Shader.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\MSVC\14.23.28105\include\glad\glad.h(32): message : 参见“APIENTRY”的前一个定义
+  stb_image.cpp
+C:\Users\59478\Desktop\CG\CG_All\opengl_playground\playground\Shader.cpp(85,67): warning C4244: “参数”: 从“int”转换到“GLfloat”，可能丢失数据
+  正在生成代码
+  Previous IPDB not found, fall back to full compilation.
+  All 434 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  playground.vcxproj -> C:\Users\59478\Desktop\CG\CG_All\opengl_playground\Release\playground.exe

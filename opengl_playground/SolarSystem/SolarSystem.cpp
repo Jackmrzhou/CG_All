@@ -29,7 +29,7 @@ void reshape(int w, int h) {
 
 void redraw() {
 	static float time = 0.f;
-	time += 0.2f;
+	time += 0.05f;
 
 	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
