@@ -4,28 +4,19 @@
 using namespace std;
 int windowWidth = 800, windowHeight = 800;
 
-float dis, fov;
-float subFov;
+float near, far, fov;
 float cameraPos[3];
-float PI() { return std::atan(1) * 4; }
-float radians(float degree) {
-	return degree * PI() / 180.f;
-}
-float degree(float rad) {
-	return rad * 180.f / PI();
-}
 float k = windowWidth / windowHeight;
+bool Perspective = false;
 
 void init() {
-	dis = 100.f;
+	far = 100.f;
 	fov = 45.f;
-	subFov = asin(1 / sqrt(4.f / pow(tan(radians(fov / 2)), 2) - 1.f / pow(k, 2)));
-	cout << subFov << endl;
-	subFov = degree(subFov)*2;
-	cout << subFov << endl;
+	near = 0.1f;
 	cameraPos[0] = 0;
 	cameraPos[1] = 0;
 	cameraPos[2] = 4.f;
+	glEnable(GL_DEPTH_TEST);
 }
 
 void reshape(int width, int height) {
@@ -35,46 +26,111 @@ void reshape(int width, int height) {
 	glutPostRedisplay();
 }
 
+void drawViewportBorder() {
+	unsigned char* data = new unsigned char[3 * windowWidth * windowHeight];
+	glReadPixels(0, 0, windowWidth, windowHeight, GL_RGB, GL_UNSIGNED_BYTE, data);
+	int col = windowWidth / 2;
+	for (int i = 0; i < windowHeight; i++) {
+		data[i * windowWidth * 3 + col * 3] = 255;
+	}
+	int row = windowHeight / 2;
+	for (int j = 0; j < windowWidth; j++) {
+		data[col * windowWidth * 3 + j * 3] = 255;
+	}
+	glDrawPixels(windowWidth, windowHeight, GL_RGB, GL_UNSIGNED_BYTE, data);
+	delete[] data;
+}
+
 void redraw() {
-	glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f(1.0f, 1.0f, 1.0f);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(subFov, k, 0.1f, dis);
-	glMatrixMode(GL_MODELVIEW);
-	glViewport(0, 0, windowWidth / 2, windowHeight / 2);
-	glLoadIdentity();
-	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], -dis / 2.0 * sin(radians(fov / 2)), -dis / 2.0 * sin(radians(fov / 2)), (double)-dis * cos(radians(fov / 2)) + cameraPos[2], 0.0, 1.0, 0.0);
-	glutWireTeapot(1);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(subFov, k, 0.1f, dis);
-	glMatrixMode(GL_MODELVIEW);
-	glViewport(windowWidth / 2, 0, windowWidth / 2, windowWidth / 2);
-	glLoadIdentity();
-	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], dis / 2.0 * sin(radians(fov / 2)), -dis / 2.0 * sin(radians(fov / 2)), (double)-dis * cos(radians(fov / 2)) + cameraPos[2], 0.0, 1.0, 0.0);
-	glutWireTeapot(1);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(subFov, k, 0.1f, dis);
+	// width/2 * 2.0/width = 1.0
+	glTranslatef(1.f, -1.f, 0.f);
+	if (Perspective)
+		gluPerspective(fov, k, near, far);
+	else
+		glOrtho(-2, 2, -2, 2, -10, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glViewport(0, windowHeight / 2, windowWidth / 2, windowHeight / 2);
 	glLoadIdentity();
-	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], -dis / 2.0 * sin(radians(fov / 2)), dis / 2.0 * sin(radians(fov / 2)), (double)-dis * cos(radians(fov / 2)) + cameraPos[2], 0.0, 1.0, 0.0);
+	gluLookAt(
+		cameraPos[0],
+		cameraPos[1],
+		cameraPos[2],
+		0,
+		0,
+		0,
+		0.0, 1.0, 0.0
+	);
 	glutWireTeapot(1);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(subFov, k, 0.1f, dis);
+	glTranslatef(-1.f, -1.f, 0.f);
+	if (Perspective)
+		gluPerspective(fov, k, near, far);
+	else
+		glOrtho(-2, 2, -2, 2, -10, 100);
 	glMatrixMode(GL_MODELVIEW);
 	glViewport(windowWidth / 2, windowHeight / 2, windowWidth / 2, windowHeight / 2);
 	glLoadIdentity();
-	gluLookAt(cameraPos[0], cameraPos[1], cameraPos[2], dis / 2.0 * sin(radians(fov / 2)), dis / 2.0 * sin(radians(fov / 2)), (double)-dis * cos(radians(fov / 2)) + cameraPos[2], 0.0, 1.0, 0.0);
+	gluLookAt(
+		cameraPos[0] ,
+		cameraPos[1] ,
+		cameraPos[2],
+		0,
+		0,
+		0,
+		0.0, 1.0, 0.0
+	);
 	glutWireTeapot(1);
 
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glTranslatef(1.f, 1.f, 0.f);
+	if (Perspective)
+		gluPerspective(fov, k, near, far);
+	else
+		glOrtho(-2, 2, -2, 2, -10, 100);
+	glMatrixMode(GL_MODELVIEW);
+	glViewport(0, 0, windowWidth / 2, windowHeight / 2);
+	glLoadIdentity();
+	gluLookAt(
+		cameraPos[0],
+		cameraPos[1],
+		cameraPos[2],
+		0,
+		0,
+		0,
+		0.0, 1.0, 0.0
+	);
+	glutWireTeapot(1);
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glTranslatef(-1.f, 1.f, 0.f);
+	if (Perspective)
+		gluPerspective(fov, k, near, far);
+	else
+		glOrtho(-2, 2, -2, 2, -10, 100);
+	glMatrixMode(GL_MODELVIEW);
+	glViewport(windowWidth / 2, 0, windowWidth / 2, windowHeight / 2);
+	glLoadIdentity();
+	gluLookAt(
+		cameraPos[0],
+		cameraPos[1],
+		cameraPos[2],
+		0,
+		0,
+		0,
+		0.0, 1.0, 0.0
+	);
+	glutWireTeapot(1);
+	
+	drawViewportBorder();
 	glutSwapBuffers();
 }
 
@@ -82,8 +138,30 @@ void idle() {
 	glutPostRedisplay();
 }
 
-void keyboardCallback(unsigned char key, int x, int y) {
+void keyCallback(unsigned char key, int x, int y) {
+	if (key == 'p') {
+		Perspective = !Perspective;
+	}
+}
 
+void specialKeyCallback(int key, int x, int y) {
+	switch (key)
+	{
+	case GLUT_KEY_UP:
+		cameraPos[1]++;
+		break;
+	case GLUT_KEY_DOWN:
+		cameraPos[1]--;
+		break;
+	case GLUT_KEY_LEFT:
+		cameraPos[0]--;
+		break;
+	case GLUT_KEY_RIGHT:
+		cameraPos[0]++;
+		break;
+	default:
+		break;
+	}
 }
 
 int main(int argc, char* argv[])
@@ -97,7 +175,8 @@ int main(int argc, char* argv[])
 	glutDisplayFunc(redraw);
 	glutReshapeFunc(reshape);
 	glutIdleFunc(idle);
-	glutKeyboardFunc(keyboardCallback);
+	glutSpecialFunc(specialKeyCallback);
+	glutKeyboardFunc(keyCallback);
 
 	if (!gladLoadGL()) {
 		cout << "something went wrong!" << endl;
