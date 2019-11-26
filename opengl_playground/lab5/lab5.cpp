@@ -5,6 +5,8 @@
 #include <vector>
 #include <string>
 #include "Shader.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 using namespace std;
 unsigned int generateTexture(unsigned char* data, int width, int height, GLenum format);
 int TextureFromFile(const string& filename)
@@ -124,18 +126,20 @@ class Application {
 public:
 	void Init(int arg, char* argv[]){
 		glutInit(&arg, argv);
+		
 		glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-		glutInitWindowSize(480, 480);
+		glutInitWindowSize(width, height);
 		int windowHandle = glutCreateWindow("Simple GLUT App");
 		glutDisplayFunc(redraw);
 		glutReshapeFunc(reshape);
+		glutKeyboardFunc(keyCallback);
 		glutIdleFunc(idle);
 
 		if (!gladLoadGL()) {
 			cout << "something went wrong!" << endl;
 			exit(-1);
 		}
-		const string imgs[] = { "42_flip.png", "Crack.bmp", "Spot.bmp" };
+		const string imgs[] = { "42_mirror.png", "Crack.bmp", "Spot.bmp" };
 		for (auto& img : imgs) {
 			int id = TextureFromFile("resources/" + img);
 			if (id != -1) {
@@ -143,6 +147,7 @@ public:
 			}
 		}
 		shader = new Shader("vertex.glsl", "fragment.glsl");
+		teapotShader = new Shader("teapotVertex.glsl", "fragment.glsl");
 		cube = new Cube();
 		glEnable(GL_DEPTH_TEST);
 	}
@@ -152,24 +157,67 @@ public:
 	}
 private:
 	static vector<GLuint> textureIDs;
-	static Shader* shader;
+	static Shader* shader, *teapotShader;
 	static Cube* cube;
+	static int width, height;
+	static bool mixTexture;
 
 	static void redraw() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glEnable(GL_TEXTURE_2D);
+		shader->use();
+		// cube textures
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, textureIDs[1]);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, textureIDs[2]);
+		shader->setInt("diffuse_tex1", 1);
+		shader->setInt("diffuse_tex2", 2);
+		shader->setInt("mixTexture", mixTexture ? 1 : 0);
+		// cube position
+		glm::mat4 projection(1.f), view(1.f), model(1.f);
+		projection = glm::perspective(45.f, (float)width / (float)height, 0.1f, 100.f);
+		view = glm::lookAt(glm::vec3{ 0.f, 0.f, 10.f }, { 0.f,0.f,0.f }, { 0.f, 1.f,0.f });
+		model = glm::translate(model, glm::vec3{ -1.5f, -3.f, 1.5f });
+		model = glm::scale(model, glm::vec3{ 1.f, 3.f,1.f });
+		shader->setMat4("projection", projection);
+		shader->setMat4("view", view);
+		shader->setMat4("model", model);
+		cube->draw();
+
+		model = glm::translate(glm::mat4(1.f), glm::vec3{1.5f, -3.f, 1.5f});
+		model = glm::scale(model, glm::vec3{ 1.f, 3.f, 1.f });
+		shader->setMat4("model", model);
+		cube->draw();
+
+		model = glm::translate(glm::mat4(1.f), glm::vec3{ 1.5f, -3.f, -1.5f });
+		model = glm::scale(model, glm::vec3{ 1.f,3.f,1.f });
+		shader->setMat4("model", model);
+		cube->draw();
+
+		model = glm::translate(glm::mat4(1.f), glm::vec3{ -1.5f, -3.f, -1.5f });
+		model = glm::scale(model, glm::vec3{ 1.f, 3.f, 1.f });
+		shader->setMat4("model", model);
+		cube->draw();
+		
+		model = glm::translate(glm::mat4(1.f), glm::vec3{0.f, -1.5f, 0.f});
+		model = glm::scale(model, glm::vec3{ 5.f, 0.5f, 5.f });
+		shader->setMat4("model", model);
+		cube->draw();
+
+		teapotShader->use();
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, textureIDs[0]);
+		teapotShader->setInt("diffuse_tex1", 0);
+		teapotShader->setInt("mixTexture", 0);
 		glLoadIdentity();
 		gluLookAt(0, 0, 10, 0, 0, 0, 0, 1, 0);
 		glutSolidTeapot(1);
-		glDisable(GL_TEXTURE_2D);
-		shader->use();
-		cube->draw();
-		shader->disable();
 		glutSwapBuffers();
 	}
 
 	static void reshape(int w, int h) {
+		width = w;
+		height = h;
 		glViewport(0, 0, w, h);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -179,6 +227,12 @@ private:
 		glLoadIdentity();
 	}
 
+	static void keyCallback(unsigned char key, int x, int y) {
+		if (key == 'm') {
+			mixTexture = !mixTexture;
+		}
+	}
+
 	static void idle() {
 		glutPostRedisplay();
 	}
@@ -186,7 +240,10 @@ private:
 
 vector<GLuint> Application::textureIDs = vector<GLuint>();
 Shader* Application::shader = nullptr;
+Shader* Application::teapotShader = nullptr;
 Cube* Application::cube = nullptr;
+int Application::width = 480, Application::height = 480;
+bool Application::mixTexture = false;
 
 int main(int arg, char *argv[]) {
 	Application app;

@@ -1,5 +1,12 @@
-#version 330 core
+#version 330
 out vec4 fragColor;
+in vec2 TexCoord;
+
+uniform sampler2D diffuse_tex1, diffuse_tex2;
+uniform int mixTexture;
 void main(){
-	fragColor = vec4(0.1,0.2,0.3,1.0);
+	if (mixTexture == 1)
+		fragColor = texture(diffuse_tex1, TexCoord)* texture(diffuse_tex2, TexCoord);
+	else 
+		fragColor = texture(diffuse_tex1, TexCoord);
 }
