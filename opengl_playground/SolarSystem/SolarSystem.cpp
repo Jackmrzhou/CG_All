@@ -95,6 +95,12 @@ void keyboardCallback(unsigned char key, int x, int y) {
 	case 'd': {
 		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * speed;
 	} break;
+	case 'z': {
+		cameraPos += speed * cameraUp;
+	} break;
+	case 'c': {
+		cameraPos -= speed * cameraUp;
+	} break;
 	default:
 		break;
 	}
